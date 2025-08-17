@@ -1,13 +1,27 @@
+import { db } from '../db';
+import { salesTable } from '../db/schema';
 import { type Sale } from '../schema';
+import { desc } from 'drizzle-orm';
 
 /**
  * Retrieves all sales transactions from the system.
  * Returns sales with customer information and transaction details.
  */
-export async function getSales(): Promise<Sale[]> {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is to fetch all sales transactions from the database.
-    // Should include customer information and order by transaction date (most recent first)
-    // Should support pagination for large datasets
-    return [];
-}
+export const getSales = async (): Promise<Sale[]> => {
+  try {
+    // Query sales ordered by transaction date (most recent first)
+    const results = await db.select()
+      .from(salesTable)
+      .orderBy(desc(salesTable.transaction_date))
+      .execute();
+
+    // Convert numeric fields back to numbers before returning
+    return results.map(sale => ({
+      ...sale,
+      total_amount: parseFloat(sale.total_amount)
+    }));
+  } catch (error) {
+    console.error('Failed to retrieve sales:', error);
+    throw error;
+  }
+};

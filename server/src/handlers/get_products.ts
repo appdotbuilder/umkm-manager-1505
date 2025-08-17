@@ -1,3 +1,5 @@
+import { db } from '../db';
+import { productsTable } from '../db/schema';
 import { type Product } from '../schema';
 
 /**
@@ -5,8 +7,18 @@ import { type Product } from '../schema';
  * Returns both physical products and services with their current stock levels.
  */
 export async function getProducts(): Promise<Product[]> {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is to fetch all products/services from the database.
-    // Should return products with current stock information
-    return [];
+  try {
+    const results = await db.select()
+      .from(productsTable)
+      .execute();
+
+    // Convert numeric fields back to numbers before returning
+    return results.map(product => ({
+      ...product,
+      price: parseFloat(product.price) // Convert string back to number
+    }));
+  } catch (error) {
+    console.error('Get products failed:', error);
+    throw error;
+  }
 }
